@@ -21,7 +21,7 @@ from pathlib import Path
 # Apify 設定
 # 優先從環境變數讀取（GitHub Actions 使用 Secrets 注入）
 # 本機執行時，可將 Token 填入下方引號內作為備用
-APIFY_API_TOKEN = os.environ.get("APIFY_API_TOKEN", "apify_api_6ADklhvGGQ6j9BGTdXAlPdN2XtJclH2zSC0I")
+APIFY_API_TOKEN = os.environ.get("APIFY_API_TOKEN", "")  # 本機測試請設定同名環境變數，或詳見設定指南.md
 ACTOR_ID = "apify/facebook-groups-scraper"     # Actor ID
 TASK_ID = ""  # 如果你用 Task，填這裡（選填）
 
