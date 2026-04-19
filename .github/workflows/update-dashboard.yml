@@ -1,0 +1,55 @@
+name: 每日輿情分析自動更新
+
+on:
+  # Apify 爬蟲完成後，透過 Webhook 觸發此 workflow
+  repository_dispatch:
+    types: [apify-done]
+
+  # 允許在 GitHub Actions 頁面手動觸發（測試用）
+  workflow_dispatch:
+
+jobs:
+  update-dashboard:
+    runs-on: ubuntu-latest
+
+    # 需要 write 權限才能 commit & push
+    permissions:
+      contents: write
+
+    steps:
+      # 1. 取得 repo 程式碼
+      - name: ✅ Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      # 2. 設定 Python 環境
+      - name: 🐍 Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      # 3. 安裝依賴套件
+      - name: 📦 Install Dependencies
+        run: pip install -r requirements.txt
+
+      # 4. 建立 data 資料夾（若不存在）
+      - name: 📁 Prepare Directories
+        run: mkdir -p data output
+
+      # 5. 執行分析腳本（Token 從 GitHub Secrets 注入）
+      - name: 🔍 Run Analysis & Update Dashboard
+        env:
+          APIFY_API_TOKEN: ${{ secrets.APIFY_API_TOKEN }}
+        run: python auto_daily_analysis.py
+
+      # 6. 將更新後的儀錶板 commit 回 repo
+      - name: 📤 Commit & Push Updated Dashboard
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add sentinel_dashboard.html
+          # 若有變更才 commit，避免空 commit 報錯
+          git diff --staged --quiet || git commit -m "🔄 自動更新｜$(date '+%Y-%m-%d %H:%M UTC') 輿情快照"
+          git push

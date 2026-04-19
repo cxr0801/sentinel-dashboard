@@ -1,0 +1,869 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SENTINEL // 輿情監控系統</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+TC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --c1:#2C6975;
+  --c2:#68B2A0;
+  --c3:#CDE0C9;
+  --c4:#E0ECDE;
+  --bg:#F4F9F6;
+  --white:#FFFFFF;
+  --text:#1A3D3A;
+  --text2:#4A7A75;
+  --text3:#8AAFA8;
+  --danger:#E26D5A;
+  --success:#4CAF87;
+  --shadow:0 2px 12px rgba(44,105,117,0.07);
+  --shadow-md:0 6px 28px rgba(44,105,117,0.12);
+  --radius:16px;
+  --sidebar-w:240px;
+}
+html,body{height:100%;font-family:'Noto Sans TC','Inter',sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.5;overflow-x:hidden}
+
+/* ─── SIDEBAR ─────────────────────── */
+.sidebar{
+  position:fixed;top:0;left:0;bottom:0;
+  width:var(--sidebar-w);
+  background:var(--c1);
+  display:flex;flex-direction:column;
+  z-index:50;
+}
+
+.sidebar-header{
+  padding:22px 20px 18px;
+  border-bottom:1px solid rgba(255,255,255,0.1);
+}
+
+.logo-wrap{display:flex;align-items:center;gap:10px}
+
+.logo-icon{
+  width:38px;height:38px;
+  background:rgba(255,255,255,0.15);
+  border-radius:11px;
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;
+}
+
+.logo-icon svg{width:20px;height:20px;stroke:#CDE0C9;fill:none;stroke-width:2}
+
+.logo-name{
+  font-family:'JetBrains Mono',monospace;
+  font-weight:600;font-size:14px;
+  color:#fff;letter-spacing:1px;
+}
+
+.logo-sub{
+  font-size:9px;color:rgba(255,255,255,0.45);
+  letter-spacing:0.5px;margin-top:2px;
+  font-family:'JetBrains Mono',monospace;
+}
+
+.nav{flex:1;padding:14px 12px;overflow-y:auto;display:flex;flex-direction:column;gap:2px}
+.nav::-webkit-scrollbar{width:0}
+
+.nav-section{
+  font-size:9px;letter-spacing:2.5px;text-transform:uppercase;
+  color:rgba(255,255,255,0.3);
+  font-family:'JetBrains Mono',monospace;
+  padding:14px 8px 5px;
+}
+
+.nav-item{
+  display:flex;align-items:center;gap:10px;
+  padding:9px 12px;border-radius:10px;
+  cursor:pointer;transition:all .2s;
+  color:rgba(255,255,255,0.6);
+  font-size:13px;text-decoration:none;
+}
+
+.nav-item:hover{background:rgba(255,255,255,0.1);color:#fff}
+.nav-item.active{background:rgba(255,255,255,0.18);color:#fff;font-weight:500}
+
+.nav-item svg{width:16px;height:16px;flex-shrink:0;stroke:currentColor;fill:none;stroke-width:2;opacity:.75}
+.nav-item:hover svg,.nav-item.active svg{opacity:1}
+
+.nav-badge{
+  margin-left:auto;font-size:9px;
+  padding:2px 8px;border-radius:20px;
+  font-family:'JetBrains Mono',monospace;
+  background:rgba(255,255,255,0.18);color:#fff;
+}
+.nav-badge.warn{background:var(--danger)}
+
+.sidebar-footer{
+  padding:14px 16px;
+  border-top:1px solid rgba(255,255,255,0.1);
+}
+
+.snapshot-label{
+  font-family:'JetBrains Mono',monospace;
+  font-size:9px;color:rgba(255,255,255,0.35);
+  line-height:1.7;margin-bottom:10px;
+}
+
+.btn-refresh{
+  width:100%;padding:8px;
+  background:rgba(255,255,255,0.1);
+  border:1px solid rgba(255,255,255,0.18);
+  border-radius:10px;
+  color:rgba(255,255,255,0.75);
+  font-size:12px;cursor:pointer;
+  transition:all .2s;
+  display:flex;align-items:center;justify-content:center;gap:7px;
+  font-family:'Noto Sans TC',sans-serif;
+}
+.btn-refresh:hover{background:rgba(255,255,255,0.2);color:#fff}
+.btn-refresh svg{width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2.5}
+
+/* ─── MAIN ────────────────────────── */
+.main{margin-left:var(--sidebar-w);min-height:100vh;display:flex;flex-direction:column}
+
+/* ─── TOPBAR ──────────────────────── */
+.topbar{
+  background:var(--white);
+  border-bottom:1px solid var(--c4);
+  padding:14px 28px;
+  display:flex;align-items:center;justify-content:space-between;
+  position:sticky;top:0;z-index:40;
+}
+
+.topbar-left{}
+.page-title{font-size:16px;font-weight:600;color:var(--text)}
+.page-sub{font-size:11px;color:var(--text3);margin-top:1px}
+
+.topbar-right{display:flex;align-items:center;gap:14px}
+
+.live-indicator{
+  display:flex;align-items:center;gap:7px;
+  font-size:11px;color:var(--text3);
+  font-family:'JetBrains Mono',monospace;
+}
+
+.live-dot{
+  width:8px;height:8px;
+  background:var(--success);border-radius:50%;
+  position:relative;
+}
+
+.live-dot::after{
+  content:'';position:absolute;inset:-3px;
+  border-radius:50%;
+  background:rgba(76,175,135,0.35);
+  animation:livepulse 2s ease-in-out infinite;
+}
+
+@keyframes livepulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.5);opacity:0}}
+
+.btn-export{
+  display:flex;align-items:center;gap:7px;
+  padding:8px 18px;
+  background:var(--c1);color:#fff;
+  border:none;border-radius:10px;
+  font-size:12px;cursor:pointer;
+  transition:all .2s;
+  font-family:'Noto Sans TC',sans-serif;
+}
+.btn-export:hover{background:#1e5260;transform:translateY(-1px);box-shadow:0 4px 12px rgba(44,105,117,0.3)}
+.btn-export svg{width:13px;height:13px;stroke:#fff;fill:none;stroke-width:2}
+
+/* ─── CONTENT ─────────────────────── */
+.content{padding:22px 28px 32px;flex:1;display:flex;flex-direction:column;gap:18px}
+
+/* ─── ALERT BANNER ────────────────── */
+.alert-banner{
+  background:linear-gradient(135deg,var(--c1) 0%,#3d8a7a 100%);
+  border-radius:var(--radius);
+  padding:16px 20px;
+  display:flex;align-items:flex-start;gap:14px;
+}
+
+.alert-icon-wrap{
+  width:40px;height:40px;
+  background:rgba(255,255,255,0.15);
+  border-radius:12px;
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;font-size:18px;
+}
+
+.alert-body{flex:1}
+.alert-title{font-weight:600;font-size:13px;color:#fff;margin-bottom:4px}
+.alert-msg{font-size:12px;color:rgba(255,255,255,0.8);line-height:1.5;margin-bottom:10px}
+.alert-tags{display:flex;flex-wrap:wrap;gap:5px}
+.atag{
+  padding:3px 11px;
+  background:rgba(255,255,255,0.15);
+  border-radius:20px;
+  font-size:10px;font-family:'JetBrains Mono',monospace;
+  color:rgba(255,255,255,0.9);white-space:nowrap;
+  transition:background .15s;cursor:default;
+}
+.atag:hover{background:rgba(255,255,255,0.25)}
+
+/* ─── KPI ROW ─────────────────────── */
+.kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+
+.kpi-card{
+  background:var(--white);border-radius:var(--radius);
+  padding:20px;box-shadow:var(--shadow);
+  position:relative;overflow:hidden;
+  transition:transform .2s,box-shadow .2s;cursor:default;
+}
+.kpi-card:hover{transform:translateY(-2px);box-shadow:var(--shadow-md)}
+
+.kpi-card::after{
+  content:'';position:absolute;
+  top:0;left:0;right:0;height:3px;
+  border-radius:var(--radius) var(--radius) 0 0;
+}
+.kpi-c1::after{background:var(--c1)}
+.kpi-c2::after{background:var(--c2)}
+.kpi-c3::after{background:var(--danger)}
+.kpi-c4::after{background:var(--success)}
+
+.kpi-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px}
+
+.kpi-icon-box{
+  width:42px;height:42px;border-radius:12px;
+  display:flex;align-items:center;justify-content:center;
+}
+.kpi-c1 .kpi-icon-box{background:rgba(44,105,117,.1)}
+.kpi-c2 .kpi-icon-box{background:rgba(104,178,160,.15)}
+.kpi-c3 .kpi-icon-box{background:rgba(226,109,90,.1)}
+.kpi-c4 .kpi-icon-box{background:rgba(76,175,135,.1)}
+
+.kpi-icon-box svg{width:20px;height:20px;fill:none;stroke-width:2}
+.kpi-c1 .kpi-icon-box svg{stroke:var(--c1)}
+.kpi-c2 .kpi-icon-box svg{stroke:var(--c2)}
+.kpi-c3 .kpi-icon-box svg{stroke:var(--danger)}
+.kpi-c4 .kpi-icon-box svg{stroke:var(--success)}
+
+.kpi-label{font-size:11px;color:var(--text3);margin-bottom:5px}
+
+.kpi-value{
+  font-family:'JetBrains Mono',monospace;
+  font-size:34px;font-weight:700;
+  line-height:1;letter-spacing:-1px;margin-bottom:5px;
+}
+.kpi-c1 .kpi-value{color:var(--c1)}
+.kpi-c2 .kpi-value{color:var(--c2)}
+.kpi-c3 .kpi-value{color:var(--danger)}
+.kpi-c4 .kpi-value{color:var(--success)}
+
+.kpi-meta{font-size:11px;color:var(--text3);display:flex;align-items:center;gap:5px}
+.kpi-meta b{color:var(--text2);font-weight:500}
+
+.kpi-progress{height:4px;background:var(--c4);border-radius:2px;margin-top:12px;overflow:hidden}
+.kpi-progress-fill{height:100%;border-radius:2px;transition:width 1.2s cubic-bezier(.4,0,.2,1)}
+.kpi-c1 .kpi-progress-fill{background:var(--c1)}
+.kpi-c2 .kpi-progress-fill{background:var(--c2)}
+.kpi-c3 .kpi-progress-fill{background:var(--danger)}
+.kpi-c4 .kpi-progress-fill{background:var(--success)}
+
+/* ─── CHARTS ROW ──────────────────── */
+.charts-row{display:grid;grid-template-columns:5fr 7fr;gap:16px;align-items:start}
+
+.card{
+  background:var(--white);border-radius:var(--radius);
+  padding:20px;box-shadow:var(--shadow);
+}
+
+.card-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+
+.card-title{
+  font-size:13px;font-weight:600;
+  color:var(--text);
+  display:flex;align-items:center;gap:8px;
+}
+.card-title::before{
+  content:'';width:4px;height:15px;
+  background:var(--c1);border-radius:2px;
+}
+.card-badge{
+  font-size:9px;color:var(--text3);
+  font-family:'JetBrains Mono',monospace;
+  background:var(--c4);padding:2px 8px;border-radius:20px;
+}
+
+/* Donut */
+.donut-legend{margin-top:14px;display:flex;flex-direction:column;gap:11px}
+
+.legend-row{display:flex;align-items:center;justify-content:space-between}
+.legend-left{display:flex;align-items:center;gap:8px}
+.legend-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.legend-lbl{font-size:12.5px;color:var(--text2)}
+
+.legend-right{display:flex;align-items:center;gap:7px}
+.legend-num{font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:600;color:var(--text)}
+.legend-pct{
+  font-size:10px;font-family:'JetBrains Mono',monospace;
+  background:var(--c4);color:var(--text3);
+  padding:1px 7px;border-radius:20px;
+}
+
+/* KW Bar */
+.kw-row{display:flex;align-items:center;gap:10px;margin-bottom:9px}
+.kw-rank{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text3);width:18px;text-align:right;flex-shrink:0}
+.kw-label{width:68px;font-size:12px;color:var(--text2);flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.kw-track{flex:1;height:9px;background:var(--c4);border-radius:5px;overflow:hidden}
+.kw-fill{height:100%;border-radius:5px;transition:width 1.2s cubic-bezier(.4,0,.2,1)}
+.kw-num{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;color:var(--c1);width:26px;text-align:right;flex-shrink:0}
+
+/* ─── LOWER ROW ───────────────────── */
+.lower-row{display:grid;grid-template-columns:5fr 7fr;gap:16px;align-items:start}
+
+/* ─── POST LIST ───────────────────── */
+.posts-toolbar{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+
+.search-wrap{flex:1;position:relative}
+.search-input{
+  width:100%;padding:8px 14px 8px 36px;
+  border:1.5px solid var(--c4);border-radius:10px;
+  background:var(--bg);
+  font-size:12.5px;color:var(--text);outline:none;
+  transition:all .2s;
+  font-family:'Noto Sans TC',sans-serif;
+}
+.search-input:focus{border-color:var(--c2);background:#fff;box-shadow:0 0 0 3px rgba(104,178,160,0.15)}
+.search-input::placeholder{color:var(--text3)}
+.search-icon{
+  position:absolute;left:11px;top:50%;transform:translateY(-50%);
+  color:var(--text3);pointer-events:none;
+}
+.search-icon svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2}
+
+.ftabs{
+  display:flex;gap:3px;
+  background:var(--c4);padding:3px;border-radius:10px;
+}
+.ftab{
+  padding:5px 13px;border-radius:8px;border:none;
+  background:transparent;cursor:pointer;
+  font-size:11px;color:var(--text3);
+  transition:all .15s;font-family:'Noto Sans TC',sans-serif;
+}
+.ftab.on{background:var(--white);color:var(--c1);font-weight:600;box-shadow:0 1px 4px rgba(44,105,117,0.12)}
+
+.posts-meta{font-size:10px;color:var(--text3);font-family:'JetBrains Mono',monospace;margin-bottom:10px}
+
+.post-scroll{max-height:320px;overflow-y:auto;margin:0 -4px;padding:0 4px}
+.post-scroll::-webkit-scrollbar{width:3px}
+.post-scroll::-webkit-scrollbar-thumb{background:var(--c3);border-radius:2px}
+
+.post-row{
+  display:flex;align-items:flex-start;gap:11px;
+  padding:11px 10px;border-radius:10px;
+  cursor:pointer;transition:background .15s;
+  border-bottom:1px solid var(--c4);
+}
+.post-row:last-child{border-bottom:none}
+.post-row:hover{background:var(--bg)}
+
+.post-num{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text3);padding-top:3px;width:22px;flex-shrink:0;text-align:right}
+.post-bar{width:3px;border-radius:2px;align-self:stretch;flex-shrink:0;min-height:38px}
+.post-body{flex:1;min-width:0}
+.post-text{
+  font-size:12.5px;line-height:1.5;color:var(--text);
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
+  margin-bottom:6px;
+}
+.post-meta-row{display:flex;align-items:center;gap:7px}
+.post-pill{
+  font-family:'JetBrains Mono',monospace;font-size:9px;
+  padding:2px 8px;border-radius:20px;
+  background:var(--c4);color:var(--text2);
+}
+.post-sent-badge{
+  font-size:9px;padding:2px 8px;border-radius:20px;
+  font-weight:500;font-family:'JetBrains Mono',monospace;
+}
+
+/* ─── MODAL ───────────────────────── */
+.overlay{
+  display:none;position:fixed;inset:0;
+  background:rgba(26,61,58,0.5);
+  z-index:200;align-items:center;justify-content:center;
+  padding:20px;backdrop-filter:blur(5px);
+}
+.overlay.show{display:flex}
+
+.modal{
+  background:var(--white);border-radius:20px;
+  padding:24px;max-width:520px;width:100%;
+  max-height:85vh;overflow-y:auto;
+  position:relative;
+  box-shadow:0 20px 60px rgba(26,61,58,0.25);
+  animation:modalIn .25s cubic-bezier(.34,1.56,.64,1);
+}
+
+@keyframes modalIn{from{transform:translateY(16px) scale(0.97);opacity:0}to{transform:none;opacity:1}}
+
+.modal-close{
+  position:absolute;top:15px;right:15px;
+  width:30px;height:30px;border-radius:9px;
+  border:none;background:var(--c4);
+  color:var(--text3);cursor:pointer;font-size:16px;
+  display:flex;align-items:center;justify-content:center;
+  transition:all .15s;
+}
+.modal-close:hover{background:var(--c3);color:var(--c1)}
+.modal-title{font-size:13px;font-weight:600;color:var(--text);margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.modal-title::before{content:'';width:4px;height:14px;background:var(--c1);border-radius:2px}
+
+.modal-body{
+  padding:14px 16px;background:var(--bg);
+  border-radius:12px;border-left:3px solid var(--c2);
+  font-size:13px;line-height:1.7;color:var(--text2);
+  white-space:pre-wrap;margin-bottom:16px;
+}
+
+.modal-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
+
+.mstat{background:var(--c4);border-radius:12px;padding:14px}
+.mstat-lbl{font-size:10px;color:var(--text3);margin-bottom:4px}
+.mstat-val{font-family:'JetBrains Mono',monospace;font-size:24px;font-weight:700}
+
+/* ─── UTILITY ─────────────────────── */
+mark{background:rgba(104,178,160,0.3);color:var(--c1);border-radius:2px;padding:0 2px;font-weight:600}
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-thumb{background:var(--c3);border-radius:2px}
+</style>
+</head>
+<body>
+
+<!-- ══════════════ SIDEBAR ══════════════ -->
+<aside class="sidebar">
+  <div class="sidebar-header">
+    <div class="logo-wrap">
+      <div class="logo-icon">
+        <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      </div>
+      <div>
+        <div class="logo-name">SENTINEL</div>
+        <div class="logo-sub">輿情監控系統</div>
+      </div>
+    </div>
+  </div>
+
+  <nav class="nav">
+    <span class="nav-section">主要功能</span>
+    <a class="nav-item active" href="#" onclick="return false">
+      <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      總覽儀錶板
+    </a>
+    <a class="nav-item" href="#" onclick="return false">
+      <svg viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+      情緒分析
+    </a>
+    <a class="nav-item" href="#" onclick="return false">
+      <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+      貼文搜尋
+      <span class="nav-badge" id="nb-total">0</span>
+    </a>
+    <a class="nav-item" href="#" onclick="return false">
+      <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      關鍵字趨勢
+    </a>
+
+    <span class="nav-section">輿情監控</span>
+    <a class="nav-item" href="#" onclick="return false">
+      <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+      警報管理
+      <span class="nav-badge warn" id="nb-warn">0</span>
+    </a>
+    <a class="nav-item" href="#" onclick="return false">
+      <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+      歷史快照
+    </a>
+    <a class="nav-item" href="#" onclick="return false">
+      <svg viewBox="0 0 24 24"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+      報表匯出
+    </a>
+  </nav>
+
+  <div class="sidebar-footer">
+    <div class="snapshot-label" id="sb-snapshot">
+      資料快照：載入中...
+    </div>
+    <button class="btn-refresh" onclick="window.location.reload()">
+      <svg viewBox="0 0 24 24"><path d="M1 4v6h6"/><path d="M3.51 15a9 9 0 1 0 .49-6"/></svg>
+      重新整理
+    </button>
+  </div>
+</aside>
+
+<!-- ══════════════ MAIN ══════════════ -->
+<div class="main">
+
+  <!-- TOP BAR -->
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="page-title">輿情監控中心</div>
+      <div class="page-sub" id="tb-sub">載入中...</div>
+    </div>
+    <div class="topbar-right">
+      <div class="live-indicator">
+        <div class="live-dot"></div>
+        即時監控中
+      </div>
+      <button class="btn-export" onclick="window.print()">
+        <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        匯出報告
+      </button>
+    </div>
+  </div>
+
+  <!-- CONTENT -->
+  <div class="content">
+
+    <!-- Alert Banner -->
+    <div class="alert-banner">
+      <div class="alert-icon-wrap">⚠️</div>
+      <div class="alert-body">
+        <div class="alert-title" id="alert-title">高負面聲量警報</div>
+        <div class="alert-msg" id="alert-msg">載入中...</div>
+        <div class="alert-tags" id="alert-tags"></div>
+      </div>
+    </div>
+
+    <!-- KPI Row -->
+    <div class="kpi-row">
+      <!-- 總貼文 -->
+      <div class="kpi-card kpi-c1">
+        <div class="kpi-top">
+          <div>
+            <div class="kpi-label">總貼文數</div>
+            <div class="kpi-value" id="k-total">—</div>
+            <div class="kpi-meta">本次快照資料</div>
+          </div>
+          <div class="kpi-icon-box">
+            <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          </div>
+        </div>
+        <div class="kpi-progress"><div class="kpi-progress-fill" style="width:100%"></div></div>
+      </div>
+      <!-- 負面 -->
+      <div class="kpi-card kpi-c3">
+        <div class="kpi-top">
+          <div>
+            <div class="kpi-label">負面聲量比例</div>
+            <div class="kpi-value" id="k-neg">—</div>
+            <div class="kpi-meta" id="k-neg-sub">—</div>
+          </div>
+          <div class="kpi-icon-box">
+            <svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          </div>
+        </div>
+        <div class="kpi-progress"><div class="kpi-progress-fill" id="pb-neg"></div></div>
+      </div>
+      <!-- 正面 -->
+      <div class="kpi-card kpi-c4">
+        <div class="kpi-top">
+          <div>
+            <div class="kpi-label">正面聲量比例</div>
+            <div class="kpi-value" id="k-pos">—</div>
+            <div class="kpi-meta" id="k-pos-sub">—</div>
+          </div>
+          <div class="kpi-icon-box">
+            <svg viewBox="0 0 24 24"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>
+          </div>
+        </div>
+        <div class="kpi-progress"><div class="kpi-progress-fill" id="pb-pos"></div></div>
+      </div>
+      <!-- 互動 -->
+      <div class="kpi-card kpi-c2">
+        <div class="kpi-top">
+          <div>
+            <div class="kpi-label">平均互動熱度</div>
+            <div class="kpi-value" id="k-avg">—</div>
+            <div class="kpi-meta">平均按讚數 / 則</div>
+          </div>
+          <div class="kpi-icon-box">
+            <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z"/></svg>
+          </div>
+        </div>
+        <div class="kpi-progress"><div class="kpi-progress-fill" id="pb-avg" style="width:60%"></div></div>
+      </div>
+    </div>
+
+    <!-- Donut + KW Bars -->
+    <div class="charts-row">
+      <div class="card">
+        <div class="card-hdr">
+          <div class="card-title">情緒分布</div>
+          <div class="card-badge">sentiment</div>
+        </div>
+        <svg id="pie" viewBox="0 0 200 155" width="100%" style="max-height:155px;display:block"></svg>
+        <div class="donut-legend" id="donut-legend"></div>
+      </div>
+      <div class="card">
+        <div class="card-hdr">
+          <div class="card-title">熱門關鍵字 Top 10</div>
+          <div class="card-badge">keyword freq</div>
+        </div>
+        <div id="kwbars"></div>
+      </div>
+    </div>
+
+    <!-- Radar + Posts -->
+    <div class="lower-row">
+      <div class="card">
+        <div class="card-hdr">
+          <div class="card-title">議題關注雷達</div>
+          <div class="card-badge">issue radar</div>
+        </div>
+        <svg id="radar" viewBox="0 0 200 210" width="100%" style="max-height:210px;display:block"></svg>
+      </div>
+      <div class="card">
+        <div class="card-hdr">
+          <div class="card-title">貼文列表</div>
+          <div class="card-badge" id="posts-badge">0 則</div>
+        </div>
+        <div class="posts-toolbar">
+          <div class="search-wrap">
+            <span class="search-icon"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg></span>
+            <input type="text" id="search-input" class="search-input" placeholder="搜尋貼文關鍵字..." oninput="searchPosts()">
+          </div>
+          <div class="ftabs">
+            <button class="ftab on" onclick="fp('all',this)">全部</button>
+            <button class="ftab" onclick="fp('negative',this)">負面</button>
+            <button class="ftab" onclick="fp('neutral',this)">中性</button>
+            <button class="ftab" onclick="fp('positive',this)">正面</button>
+          </div>
+        </div>
+        <div class="posts-meta" id="search-info">顯示 0 則</div>
+        <div class="post-scroll" id="postlist"></div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+
+<!-- Modal -->
+<div class="overlay" id="ovl" onclick="cm()">
+  <div class="modal" onclick="event.stopPropagation()">
+    <button class="modal-close" onclick="cm()">✕</button>
+    <div class="modal-title">貼文詳情</div>
+    <div class="modal-body" id="mtxt"></div>
+    <div class="modal-stats">
+      <div class="mstat">
+        <div class="mstat-lbl">按讚數</div>
+        <div class="mstat-val" id="mlikes" style="color:var(--c1)">—</div>
+      </div>
+      <div class="mstat">
+        <div class="mstat-lbl">留言數</div>
+        <div class="mstat-val" id="mcomments" style="color:var(--c2)">—</div>
+      </div>
+      <div class="mstat">
+        <div class="mstat-lbl">情緒判定</div>
+        <div class="mstat-val" id="msent" style="font-size:14px;padding-top:4px">—</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════
+//  資料區塊（由 auto_daily_analysis.py 自動更新）
+// ══════════════════════════════════════════════════
+const C={
+  snapshot:"2026-04-19 10:24",
+  total:19, negative:4, positive:5, neutral:10,
+  avgLikes:26.3, maxLikes:208, maxComments:142, avgComments:14.2,
+  high:1, mid:5, low:13,
+  alert:"「加薪15000」「退伍」話題持續延燒，近期最高互動貼文均與薪資福利相關，建議重點關注。",
+  tags:["#加薪15000","#職場霸凌","#裝備問題","#退伍潮","#長官行為","#海軍航指","#爆料"],
+  radar:[
+    {l:"薪資待遇",v:85},{l:"長官行為",v:72},{l:"退伍意願",v:65},
+    {l:"裝備問題",v:58},{l:"職場霸凌",v:42},{l:"爆料揭發",v:38},
+  ],
+};
+const POSTS=[
+  {likes:208,comments:142,text:"😊  拜託投民進黨一票!   ",s:"neutral"},
+  {likes:64,comments:26,text:"夢到國軍2030年台志願役現役會跌破10萬",s:"neutral"},
+  {likes:42,comments:18,text:"難怪人一直少，每個都想退伍，各司其職都無法套用，分一堆官科然後叫水電師傅去做麵包，教體育的去教數學，叫理髮師去當會計，遇到演訓就是這樣隨便派人，竟然還被說，被罵幾次就會了？？？要這樣子幹嘛分一堆官科專長，真是笑話",s:"negative"},
+  {likes:44,comments:14,text:"昨天大隊長在莒光課夜教時，才強調「部隊絕對不允許兩性淫規的事情發生」，否則以退訓進行懲處，回頭看看近期發生在八德化校學生一中隊通裝班115-3期的這兩位好學員。",s:"positive"},
+  {likes:46,comments:12,text:"北測裁判官某少校在大部隊剛測驗完時下山不到40分鐘時間吃飯，叫一堆人到北測餐廳聽10天9夜的講習，講白了這些事可以找時間開會找軍官講啊？為什麼要一堆人不是軍官的人沒領領到加給的人都要來聽？",s:"negative"},
+  {likes:25,comments:15,text:"黃埔出這種的將軍真的該好好檢討了",s:"neutral"},
+  {likes:16,comments:12,text:"真的就不懂為什麼有公主病的可以升到上士，在下士把事情丟給中士的做，升到中士把事情丟給上士下士做，當到上士時自己不想做的事情全都丟給下面的做",s:"neutral"},
+  {likes:13,comments:9,text:"想認真詢問 我們單位人事官跟我說  留營併調不能在留營生效後的三個月內提出申請  請問有相關的專業人士可以幫忙解答嗎",s:"positive"},
+  {likes:10,comments:9,text:"如果要談所謂的「爽單位」，有一個地方，真的低調到不行——陸勤部底下的副供中心，以及所屬各副供站。 這裡大概是軍官界的隱藏版天堂。",s:"positive"},
+  {likes:8,comments:6,text:"認真想問 無人機中隊除了無人機還有其他特別的勤務或任務嗎？  為了那個戰加想留營調職  目前只是二級戰加的小小兵",s:"positive"}
+];
+const KW=[
+  {w:"如果你還",n:7},{w:"浪費時間",n:6},{w:"職場霸凌",n:5},{w:"這裡大概",n:5},
+  {w:"兩性淫規",n:4},{w:"有人適用",n:4},{w:"不可取",n:3},{w:"左營海軍",n:3},
+  {w:"基勤隊",n:2},{w:"楷洋上士",n:2}
+];
+// ══════════════════════════════════════════════════
+
+const SC={positive:"#4CAF87",negative:"#E26D5A",neutral:"#68B2A0"};
+const SL={positive:"正面",negative:"負面",neutral:"中性"};
+const g=id=>document.getElementById(id);
+
+function init(){
+  const negP=(C.negative/C.total*100).toFixed(1);
+  const posP=(C.positive/C.total*100).toFixed(1);
+
+  // Sidebar
+  g('sb-snapshot').textContent=`資料快照：${C.snapshot}`;
+  g('nb-total').textContent=C.total;
+  g('nb-warn').textContent=C.negative;
+
+  // Topbar
+  g('tb-sub').textContent=`快照時間：${C.snapshot} ｜ 共 ${C.total} 則貼文`;
+
+  // Alert
+  g('alert-title').textContent='⚠ 高負面聲量警報';
+  g('alert-msg').textContent=C.alert;
+  g('alert-tags').innerHTML=C.tags.map(t=>`<span class="atag">${t}</span>`).join('');
+
+  // KPIs
+  g('k-total').textContent=C.total;
+  g('k-neg').textContent=negP+'%';
+  g('k-neg-sub').textContent=`${C.negative} 則負面 / ${C.total} 則`;
+  g('pb-neg').style.width=negP+'%';
+  g('k-pos').textContent=posP+'%';
+  g('k-pos-sub').textContent=`${C.positive} 則正面 / ${C.total} 則`;
+  g('pb-pos').style.width=posP+'%';
+  g('k-avg').textContent=C.avgLikes;
+
+  drawDonut();
+  drawKW();
+  drawRadar();
+  rp();
+}
+
+function drawDonut(){
+  const d=[
+    {n:"負面",v:C.negative,c:"#E26D5A"},
+    {n:"中性",v:C.neutral,c:"#68B2A0"},
+    {n:"正面",v:C.positive,c:"#4CAF87"},
+  ];
+  const tot=d.reduce((s,x)=>s+x.v,0),cx=100,cy=77,r=63,ir=40;
+  let a=-Math.PI/2,p='';
+  d.forEach(x=>{
+    if(!x.v)return;
+    const sw=x.v/tot*Math.PI*2;
+    const[x1,y1]=[cx+r*Math.cos(a),cy+r*Math.sin(a)];
+    const[x2,y2]=[cx+r*Math.cos(a+sw),cy+r*Math.sin(a+sw)];
+    const[ix1,iy1]=[cx+ir*Math.cos(a),cy+ir*Math.sin(a)];
+    const[ix2,iy2]=[cx+ir*Math.cos(a+sw),cy+ir*Math.sin(a+sw)];
+    const lg=sw>Math.PI?1:0;
+    p+=`<path d="M${ix1.toFixed(1)},${iy1.toFixed(1)}L${x1.toFixed(1)},${y1.toFixed(1)}A${r},${r} 0 ${lg},1 ${x2.toFixed(1)},${y2.toFixed(1)}L${ix2.toFixed(1)},${iy2.toFixed(1)}A${ir},${ir} 0 ${lg},0 ${ix1.toFixed(1)},${iy1.toFixed(1)}Z" fill="${x.c}" stroke="#fff" stroke-width="2.5" style="cursor:default;transition:opacity .2s" onmouseenter="this.style.opacity=.75" onmouseleave="this.style.opacity=1"/>`;
+    a+=sw;
+  });
+  p+=`<text x="${cx}" y="${cy-7}" text-anchor="middle" font-size="10" fill="#8AAFA8" font-family="JetBrains Mono,monospace" letter-spacing="1">TOTAL</text>`;
+  p+=`<text x="${cx}" y="${cy+15}" text-anchor="middle" font-size="30" font-weight="700" fill="#1A3D3A" font-family="JetBrains Mono,monospace">${tot}</text>`;
+  g('pie').innerHTML=p;
+
+  g('donut-legend').innerHTML=d.map(x=>`
+    <div class="legend-row">
+      <div class="legend-left">
+        <div class="legend-dot" style="background:${x.c}"></div>
+        <span class="legend-lbl">${x.n}</span>
+      </div>
+      <div class="legend-right">
+        <span class="legend-num">${x.v}</span>
+        <span class="legend-pct">${(x.v/tot*100).toFixed(0)}%</span>
+      </div>
+    </div>`).join('');
+}
+
+function drawKW(){
+  const max=KW[0]?.n||1;
+  const colors=["#2C6975","#2C6975","#2C6975","#35848F","#35848F","#35848F","#68B2A0","#68B2A0","#8ABDB5","#8ABDB5"];
+  g('kwbars').innerHTML=KW.map((k,i)=>`
+    <div class="kw-row">
+      <span class="kw-rank">${i+1}</span>
+      <span class="kw-label" title="${k.w}">${k.w}</span>
+      <div class="kw-track"><div class="kw-fill" style="width:${(k.n/max*100).toFixed(0)}%;background:${colors[i]}"></div></div>
+      <span class="kw-num">${k.n}</span>
+    </div>`).join('');
+}
+
+function drawRadar(){
+  const d=C.radar,n=d.length,cx=100,cy=105,r=68;
+  const pt=(i,v)=>[cx+r*(v/100)*Math.cos(-Math.PI/2+i/n*Math.PI*2),cy+r*(v/100)*Math.sin(-Math.PI/2+i/n*Math.PI*2)];
+  const pf=i=>[cx+r*Math.cos(-Math.PI/2+i/n*Math.PI*2),cy+r*Math.sin(-Math.PI/2+i/n*Math.PI*2)];
+  let s='';
+  [.25,.5,.75,1].forEach(f=>{
+    const gp=d.map((_,i)=>{const[x,y]=pf(i);return `${(cx+(x-cx)*f).toFixed(1)},${(cy+(y-cy)*f).toFixed(1)}`;}).join(' ');
+    s+=`<polygon points="${gp}" fill="none" stroke="#E0ECDE" stroke-width="1.2"/>`;
+  });
+  d.forEach((_,i)=>{const[x,y]=pf(i);s+=`<line x1="${cx}" y1="${cy}" x2="${x.toFixed(1)}" y2="${y.toFixed(1)}" stroke="#E0ECDE" stroke-width="1"/>`;});
+  const poly=d.map((_,i)=>pt(i,_.v).map(v=>v.toFixed(1)).join(',')).join(' ');
+  s+=`<polygon points="${poly}" fill="#68B2A0" fill-opacity="0.2" stroke="#2C6975" stroke-width="2"/>`;
+  d.forEach((item,i)=>{
+    const[px,py]=pt(i,item.v);
+    s+=`<circle cx="${px.toFixed(1)}" cy="${py.toFixed(1)}" r="4.5" fill="#2C6975" stroke="#fff" stroke-width="2"/>`;
+    const[fx,fy]=pf(i);
+    const lx=cx+(fx-cx)*1.35,ly=cy+(fy-cy)*1.35;
+    const anc=fx<cx-5?'end':fx>cx+5?'start':'middle';
+    s+=`<text x="${lx.toFixed(1)}" y="${ly.toFixed(1)}" text-anchor="${anc}" dominant-baseline="central" font-size="10.5" fill="#2C6975" font-family="Noto Sans TC,sans-serif" font-weight="500">${item.l}</text>`;
+  });
+  g('radar').innerHTML=s;
+}
+
+let curFilter='all',searchQ='';
+
+function fp(f,btn){
+  curFilter=f;
+  document.querySelectorAll('.ftab').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  rp();
+}
+
+function searchPosts(){
+  searchQ=g('search-input').value.toLowerCase();
+  rp();
+}
+
+function rp(){
+  let list=curFilter==='all'?POSTS:POSTS.filter(p=>p.s===curFilter);
+  if(searchQ)list=list.filter(p=>p.text.toLowerCase().includes(searchQ));
+  g('search-info').textContent=`顯示 ${list.length} / ${POSTS.length} 則貼文`;
+  g('posts-badge').textContent=`${list.length} 則`;
+  g('postlist').innerHTML=list.map((p,i)=>`
+    <div class="post-row" onclick="om(${POSTS.indexOf(p)})">
+      <span class="post-num">#${String(i+1).padStart(2,'0')}</span>
+      <div class="post-bar" style="background:${SC[p.s]}"></div>
+      <div class="post-body">
+        <div class="post-text">${hl(p.text.replace(/\n/g,' '),searchQ)}</div>
+        <div class="post-meta-row">
+          <span class="post-pill">👍 ${p.likes}</span>
+          <span class="post-pill">💬 ${p.comments}</span>
+          <span class="post-sent-badge" style="background:${SC[p.s]}22;color:${SC[p.s]}">${SL[p.s]}</span>
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+function hl(text,q){
+  if(!q)return text;
+  const rx=new RegExp(`(${q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')})`,'gi');
+  return text.replace(rx,'<mark>$1</mark>');
+}
+
+function om(i){
+  const p=POSTS[i];
+  g('mtxt').textContent=p.text;
+  g('mlikes').textContent=p.likes;
+  g('mcomments').textContent=p.comments;
+  g('msent').textContent=SL[p.s];
+  g('msent').style.color=SC[p.s];
+  g('ovl').classList.add('show');
+}
+
+function cm(){g('ovl').classList.remove('show')}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')cm()});
+
+init();
+</script>
+</body>
+</html>

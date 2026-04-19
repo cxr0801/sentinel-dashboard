@@ -1,0 +1,98 @@
+JSON完整設定
+{
+  "startUrls": [
+    {
+      "url": "https://www.facebook.com/groups/3643373249226437"
+    }
+  ],
+  "maxPosts": 100,
+  "maxPostComments": 50,
+  "maxCommentDepth": 1,
+  "postTimeFrame": "last_24h",
+  "scrapePosts": true,
+  "scrapeComments": true,
+  "scrapeReactions": false,
+  "scrapePostUrls": false,
+  "scrapePostStats": true,
+  "commentsPerPost": 0,
+  "sortBy": "NEW"
+}
+
+
+所有貼文的網址都一樣（指向社團首頁）
+如果需要個別貼文的連結，要在設定中開啟 scrapePostUrls: true
+
+=========================================================================
+
+STEP 3：設定爬取參數
+點擊 Try for free 進入設定頁面：
+Input 設定：
+
+startUrls:
+  → https://www.facebook.com/groups/3643373249226437
+
+maxPosts: 100          ← 每次爬取最多幾則貼文
+maxPostComments: 50    ← 每則貼文最多幾則留言
+maxCommentDepth: 1     ← 留言層數（1=只抓第一層）
+
+scrapePosts: true
+scrapeComments: true
+scrapeReactions: false  ← 不需要可關閉（節省費用）
+
+
+STEP 4：測試執行
+
+設定完成後點擊 Save & Start
+等待約 3–10 分鐘
+執行完成後點選 Output 頁籤確認資料
+
+確認資料包含以下欄位：
+postUrl        貼文連結
+text           貼文內容
+time           發文時間
+authorName     作者名稱
+comments[]     留言陣列
+  └ text       留言內容
+  └ authorName 留言者
+
+
+STEP 5：匯出為 Excel
+
+Output 頁面右上角點選 Export
+格式選擇 Excel (.xlsx)
+下載檔案確認格式正確
+
+
+STEP 6：設定每日自動排程
+
+回到 Actor 頁面，點選 Schedules 分頁
+點擊 Create new schedule
+
+Schedule 設定：
+
+Name:      daily-facebook-scrape
+Cron:      0 23 * * *
+           ↑ UTC 23:00 = 台灣時間 07:00
+
+Actor:     facebook-groups-scraper
+Run input: 使用 STEP 3 的設定
+
+點擊 Save 完成
+
+
+STEP 7：設定自動存入 Excel（進階）
+Apify 執行完後可自動透過 Webhook 通知你下載，或串接 Google Sheets：
+Integrations → Google Sheets
+→ 每次執行完自動寫入指定試算表
+→ 再手動另存為 Excel
+或是設定 Email 通知：
+Integrations → Email
+→ 執行完後寄信通知你下載
+
+費用控制建議
+設定建議值原因maxPosts50–100避免超出免費額度scrapeReactionsfalse減少不必要的 API 消耗maxPostComments30留言過多會大幅增加費用
+
+可能遇到的問題
+問題解決方式資料為空確認社團 URL 正確，嘗試加入 Cookie執行失敗換用 Proxy 設定（Apify 內建）留言不完整調高 maxCommentDepth費用超出預期降低 maxPosts 數量
+
+完成以上設定後，每天早上 7 點會自動執行爬取並可匯出 Excel。建議先用免費額度完整測試一次，確認資料品質後再設定排程。

@@ -1,0 +1,9 @@
+# GitHub Actions 版本：忽略不需 commit 的檔案
+output/
+data/
+__pycache__/
+*.pyc
+*.pycache
+.env
+*.xlsx
+*.log
