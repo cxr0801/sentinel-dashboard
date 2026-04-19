@@ -96,3 +96,14 @@ Integrations → Email
 問題解決方式資料為空確認社團 URL 正確，嘗試加入 Cookie執行失敗換用 Proxy 設定（Apify 內建）留言不完整調高 maxCommentDepth費用超出預期降低 maxPosts 數量
 
 完成以上設定後，每天早上 7 點會自動執行爬取並可匯出 Excel。建議先用免費額度完整測試一次，確認資料品質後再設定排程。
+
+==============================================================================================
+完整workflow
+
+Apify 爬蟲完成
+    ↓ Webhook 觸發
+GitHub Actions 執行 (25秒)
+    ↓ 分析、更新 HTML、commit
+GitHub Pages 自動部署 (36秒)
+    ↓
+管理層看到最新儀錶板

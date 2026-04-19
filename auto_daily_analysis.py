@@ -30,6 +30,7 @@ BASE_DIR = Path(__file__).parent
 DATA_DIR = BASE_DIR / "data"           # 每日原始資料
 OUTPUT_DIR = BASE_DIR / "output"       # 分析報告
 DASHBOARD_PATH = BASE_DIR / "sentinel_dashboard.html"  # 儀錶板路徑
+HISTORY_PATH = BASE_DIR / "summary_history.json"       # 7日摘要歷史（已去識別化）
 
 # 建立資料夾
 DATA_DIR.mkdir(exist_ok=True)
@@ -177,6 +178,7 @@ def analyze_data(json_file):
             'sentiment': analyze_sentiment(text),
             'author': p.get('user', {}).get('name', '匿名') if isinstance(p.get('user'), dict) else '匿名',
             'url': p.get('url', '') or '',  # Facebook 貼文原文連結
+            'date': str(p.get('date') or p.get('createdAt') or '')[:10],
         })
     
     # 統計
@@ -222,6 +224,53 @@ def analyze_data(json_file):
     print(f"     平均按讚：{avg_likes:.1f}")
     
     return stats
+
+
+# ══════════════════════════════════════════════════════════════
+# 2.5 更新7日摘要歷史（已去識別化，可安全公開）
+# ══════════════════════════════════════════════════════════════
+
+def update_history(stats):
+    """更新7日摩要歷史（已去識別化，公開安全）
+    summary_history.json 內容：純統統計數字，無個人資料
+    """
+    today = datetime.now().strftime("%Y-%m-%d")
+    total = stats['total']
+    
+    # 讀取現有歷史
+    if HISTORY_PATH.exists():
+        with open(HISTORY_PATH, 'r', encoding='utf-8') as f:
+            history = json.load(f)
+    else:
+        history = []
+    
+    # 移除今天已有的紀錄（避免重複）
+    history = [h for h in history if h['date'] != today]
+    
+    # 新增今日摘要（僅統計數字，無言論內容、無ID、無名字）
+    today_summary = {
+        'date': today,
+        'total': total,
+        'negative': stats['negative'],
+        'positive': stats['positive'],
+        'neutral': stats['neutral'],
+        'negRate': round(stats['negative'] / total * 100, 1) if total else 0,
+        'posRate': round(stats['positive'] / total * 100, 1) if total else 0,
+        'avgLikes': stats['avgLikes'],
+        'maxLikes': stats['maxLikes'],
+        'topKeywords': [kw for kw, _ in stats['keywords'][:5]],
+    }
+    history.append(today_summary)
+    
+    # 只保留最近7天
+    history = sorted(history, key=lambda x: x['date'])[-7:]
+    
+    # 儲存
+    with open(HISTORY_PATH, 'w', encoding='utf-8') as f:
+        json.dump(history, f, ensure_ascii=False, indent=2)
+    
+    print(f"[OK] 7日摖要已更新（共 {len(history)} 天紀錄）")
+    return history
 
 
 # ══════════════════════════════════════════════════════════════
@@ -280,10 +329,18 @@ def generate_excel_report(stats, json_file):
 # 4. 更新網頁儀錶板
 # ══════════════════════════════════════════════════════════════
 
-def update_dashboard(stats):
+def update_dashboard(stats, history=None):
     """更新 HTML 儀錶板資料"""
     print(f"\n[步驟5] 正在更新儀錶板...")
     
+    if history is None:
+        if HISTORY_PATH.exists():
+            import json
+            with open(HISTORY_PATH, 'r', encoding='utf-8') as f:
+                history = json.load(f)
+        else:
+            history = []
+
     if not DASHBOARD_PATH.exists():
         print(f"[!] 找不到儀錶板檔案：{DASHBOARD_PATH}")
         return
@@ -301,7 +358,7 @@ def update_dashboard(stats):
         return json.dumps(t, ensure_ascii=False)
     
     posts_js = ',\n  '.join([
-        f'{{likes:{p["likes"]},comments:{p["comments"]},text:{safe_text(p["text"])},s:"{p["sentiment"]}",url:{json.dumps(p.get("url",""))}}}'
+        f'{{likes:{p["likes"]},comments:{p["comments"]},text:{safe_text(p["text"])},s:"{p["sentiment"]}",url:{json.dumps(p.get("url",""))},date:{json.dumps(p.get("date",""))}}}'
         for p in stats['topPosts']
     ])
     
@@ -310,6 +367,8 @@ def update_dashboard(stats):
         for kw, cnt in stats['keywords']
     ])
     
+    history_js = json.dumps(history, ensure_ascii=False, separators=(',', ':')) if history else '[]'
+
     new_config = f"""const C={{
   snapshot:"{now}",
   total:{stats['total']}, negative:{stats['negative']}, positive:{stats['positive']}, neutral:{stats['neutral']},
@@ -327,11 +386,12 @@ const POSTS=[
 ];
 const KW=[
   {keywords_js}
-];"""
+];
+const HISTORY={history_js};"""
     
     # 替換資料區塊
     import re
-    pattern = r'const C=\{.*?\};.*?const POSTS=\[.*?\];.*?const KW=\[.*?\];'
+    pattern = r'const C=\{.*?\};.*?const POSTS=\[.*?\];.*?const KW=\[.*?\];(?:\s*const HISTORY=.*?;)?'
     html_new = re.sub(pattern, new_config, html, flags=re.DOTALL)
     
     # 儲存
@@ -373,17 +433,21 @@ def main():
     # 2. 分析
     stats = analyze_data(json_file)
     
-    # 3. 產出 Excel
+    # 3. 更新7日摖要歷史
+    history = update_history(stats)
+    
+    # 4. 產出 Excel
     generate_excel_report(stats, json_file)
     
-    # 4. 更新儀錶板
-    update_dashboard(stats)
+    # 5. 更新儀錶板（传入 7日歷史）
+    update_dashboard(stats, history)
     
     print("\n" + "=" * 60)
     print("[OK] 所有任務完成！")
     print("=" * 60)
     print(f"\n資料位置：")
     print(f"   原始資料：{json_file}")
+    print(f"   7日歷史：  {HISTORY_PATH}")
     print(f"   分析報告：{OUTPUT_DIR}")
     print(f"   儀錶板：  {DASHBOARD_PATH}")
 
