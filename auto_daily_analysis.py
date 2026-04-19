@@ -176,6 +176,7 @@ def analyze_data(json_file):
             'comments': p.get('commentsCount', 0) or 0,
             'sentiment': analyze_sentiment(text),
             'author': p.get('user', {}).get('name', '匿名') if isinstance(p.get('user'), dict) else '匿名',
+            'url': p.get('url', '') or '',  # Facebook 貼文原文連結
         })
     
     # 統計
@@ -300,7 +301,7 @@ def update_dashboard(stats):
         return json.dumps(t, ensure_ascii=False)
     
     posts_js = ',\n  '.join([
-        f'{{likes:{p["likes"]},comments:{p["comments"]},text:{safe_text(p["text"])},s:"{p["sentiment"]}"}}'
+        f'{{likes:{p["likes"]},comments:{p["comments"]},text:{safe_text(p["text"])},s:"{p["sentiment"]}",url:{json.dumps(p.get("url",""))}}}'
         for p in stats['topPosts']
     ])
     
