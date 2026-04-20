@@ -16,5 +16,23 @@
       "督導",
       "裝備"
     ]
+  },
+  {
+    "date": "2026-04-21",
+    "total": 188,
+    "negative": 41,
+    "positive": 22,
+    "neutral": 125,
+    "negRate": 21.8,
+    "posRate": 11.7,
+    "avgLikes": 44.0,
+    "maxLikes": 758,
+    "topKeywords": [
+      "長官",
+      "退伍",
+      "國防部",
+      "督導",
+      "裝備"
+    ]
   }
 ]
