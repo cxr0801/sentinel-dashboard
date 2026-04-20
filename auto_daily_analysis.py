@@ -199,8 +199,8 @@ def analyze_data(json_file):
     # 熱門關鍵字
     keywords = extract_keywords(posts, top_n=10)
     
-    # Top 10 貼文
-    top_posts = sorted(analyzed, key=lambda x: x['likes'] + x['comments']*2, reverse=True)[:10]
+    # Top 100 貼文 (顯示在儀表板)
+    top_posts = sorted(analyzed, key=lambda x: x['likes'] + x['comments']*2, reverse=True)[:100]
     
     stats = {
         'total': total,
