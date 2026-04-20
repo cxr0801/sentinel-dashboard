@@ -344,7 +344,6 @@ def update_dashboard(stats, history=None):
     
     if history is None:
         if HISTORY_PATH.exists():
-            import json
             try:
                 with open(HISTORY_PATH, 'r', encoding='utf-8') as f:
                     history = json.load(f)
