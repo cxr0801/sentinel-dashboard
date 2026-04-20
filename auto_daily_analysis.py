@@ -234,7 +234,9 @@ def update_history(stats):
     """更新7日摩要歷史（已去識別化，公開安全）
     summary_history.json 內容：純統統計數字，無個人資料
     """
-    today = datetime.now().strftime("%Y-%m-%d")
+    from datetime import timezone, timedelta
+    tz_tw = timezone(timedelta(hours=8))
+    today = datetime.now(tz_tw).strftime("%Y-%m-%d")
     total = stats['total']
     
     # 讀取現有歷史
@@ -311,7 +313,9 @@ def generate_excel_report(stats, json_file):
     df = pd.DataFrame(df_posts)
     
     # 儲存
-    today = datetime.now().strftime("%Y%m%d")
+    from datetime import timezone, timedelta
+    tz_tw = timezone(timedelta(hours=8))
+    today = datetime.now(tz_tw).strftime("%Y%m%d")
     excel_path = OUTPUT_DIR / f"輿情報告_{today}.xlsx"
     
     with pd.ExcelWriter(excel_path, engine='openpyxl') as writer:
@@ -361,8 +365,10 @@ def update_dashboard(stats, history=None):
     with open(DASHBOARD_PATH, 'r', encoding='utf-8') as f:
         html = f.read()
     
-    # 準備新資料
-    now = datetime.now().strftime("%Y-%m-%d %H:%M")
+    # 準備新資料 (強制轉換為台灣時間 UTC+8)
+    from datetime import timezone, timedelta
+    tz_tw = timezone(timedelta(hours=8))
+    now = datetime.now(tz_tw).strftime("%Y-%m-%d %H:%M")
     
     # 建立 JS 資料（文字中的換行符需清除，避免破壞 JS 字串語法）
     def safe_text(t, maxlen=120):
@@ -422,7 +428,9 @@ def main():
     print("=" * 60)
     print("  靠北長官2026 - 每日自動分析系統")
     print("=" * 60)
-    print(f"執行時間：{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    from datetime import timezone, timedelta
+    tz_tw = timezone(timedelta(hours=8))
+    print(f"執行時間：{datetime.now(tz_tw).strftime('%Y-%m-%d %H:%M:%S')}")
     
     try:
         # 檢查設定
