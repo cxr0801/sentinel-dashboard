@@ -239,8 +239,12 @@ def update_history(stats):
     
     # 讀取現有歷史
     if HISTORY_PATH.exists():
-        with open(HISTORY_PATH, 'r', encoding='utf-8') as f:
-            history = json.load(f)
+        try:
+            with open(HISTORY_PATH, 'r', encoding='utf-8') as f:
+                history = json.load(f)
+        except Exception as e:
+            print(f"[!] 讀取歷史記錄失敗：{e}，將建立新紀錄")
+            history = []
     else:
         history = []
     
@@ -311,14 +315,19 @@ def generate_excel_report(stats, json_file):
     excel_path = OUTPUT_DIR / f"輿情報告_{today}.xlsx"
     
     with pd.ExcelWriter(excel_path, engine='openpyxl') as writer:
-        df.to_excel(writer, sheet_name='所有貼文', index=False)
-        
-        # 負面貼文
-        df_neg = df[df['情緒'] == 'negative'].nlargest(50, '按讚數')
-        df_neg.to_excel(writer, sheet_name='負面貼文TOP50', index=False)
+        if df.empty:
+            pd.DataFrame(columns=['貼文內容', '按讚數', '留言數', '情緒', '作者']).to_excel(writer, sheet_name='所有貼文', index=False)
+            pd.DataFrame(columns=['貼文內容', '按讚數', '留言數', '情緒', '作者']).to_excel(writer, sheet_name='負面貼文TOP50', index=False)
+        else:
+            df.to_excel(writer, sheet_name='所有貼文', index=False)
+            # 負面貼文
+            df_neg = df[df['情緒'] == 'negative'].nlargest(50, '按讚數')
+            df_neg.to_excel(writer, sheet_name='負面貼文TOP50', index=False)
         
         # 關鍵字
         kw_df = pd.DataFrame(stats['keywords'], columns=['關鍵字', '出現次數'])
+        if kw_df.empty:
+            kw_df = pd.DataFrame(columns=['關鍵字', '出現次數'])
         kw_df.to_excel(writer, sheet_name='熱門關鍵字', index=False)
     
     print(f"[OK] Excel 報告已儲存：{excel_path}")
@@ -336,8 +345,12 @@ def update_dashboard(stats, history=None):
     if history is None:
         if HISTORY_PATH.exists():
             import json
-            with open(HISTORY_PATH, 'r', encoding='utf-8') as f:
-                history = json.load(f)
+            try:
+                with open(HISTORY_PATH, 'r', encoding='utf-8') as f:
+                    history = json.load(f)
+            except Exception as e:
+                print(f"[!] 讀取歷史記錄失敗：{e}，將建立空紀錄")
+                history = []
         else:
             history = []
 
@@ -412,44 +425,51 @@ def main():
     print("=" * 60)
     print(f"執行時間：{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     
-    # 檢查設定
-    if not APIFY_API_TOKEN:
-        print("\n[X] 錯誤：找不到 Apify API Token")
-        print("    本機執行：請在腳本第 22 行填入 Token")
-        print("    GitHub Actions：請在 Repo Settings > Secrets 新增 APIFY_API_TOKEN")
-        return
-    
-    # 1. 下載資料
-    run_id = get_latest_run()
-    if not run_id:
-        print("\n[X] 無法取得最新執行，程式結束")
-        return
-    
-    json_file = download_dataset(run_id)
-    if not json_file:
-        print("\n[X] 無法下載資料集，程式結束")
-        return
-    
-    # 2. 分析
-    stats = analyze_data(json_file)
-    
-    # 3. 更新7日摖要歷史
-    history = update_history(stats)
-    
-    # 4. 產出 Excel
-    generate_excel_report(stats, json_file)
-    
-    # 5. 更新儀錶板（传入 7日歷史）
-    update_dashboard(stats, history)
-    
-    print("\n" + "=" * 60)
-    print("[OK] 所有任務完成！")
-    print("=" * 60)
-    print(f"\n資料位置：")
-    print(f"   原始資料：{json_file}")
-    print(f"   7日歷史：  {HISTORY_PATH}")
-    print(f"   分析報告：{OUTPUT_DIR}")
-    print(f"   儀錶板：  {DASHBOARD_PATH}")
+    try:
+        # 檢查設定
+        if not APIFY_API_TOKEN:
+            print("\n[X] 錯誤：找不到 Apify API Token")
+            print("    本機執行：請在腳本第 22 行填入 Token")
+            print("    GitHub Actions：請在 Repo Settings > Secrets 新增 APIFY_API_TOKEN")
+            return
+        
+        # 1. 下載資料
+        run_id = get_latest_run()
+        if not run_id:
+            print("\n[X] 無法取得最新執行，程式結束")
+            return
+        
+        json_file = download_dataset(run_id)
+        if not json_file:
+            print("\n[X] 無法下載資料集，程式結束")
+            return
+        
+        # 2. 分析
+        stats = analyze_data(json_file)
+        
+        # 3. 更新7日摖要歷史
+        history = update_history(stats)
+        
+        # 4. 產出 Excel
+        generate_excel_report(stats, json_file)
+        
+        # 5. 更新儀錶板（传入 7日歷史）
+        update_dashboard(stats, history)
+        
+        print("\n" + "=" * 60)
+        print("[OK] 所有任務完成！")
+        print("=" * 60)
+        print(f"\n資料位置：")
+        print(f"   原始資料：{json_file}")
+        print(f"   7日歷史：  {HISTORY_PATH}")
+        print(f"   分析報告：{OUTPUT_DIR}")
+        print(f"   儀錶板：  {DASHBOARD_PATH}")
+    except Exception as e:
+        import traceback
+        print("\n[X] 執行過程中發生未預期的錯誤：")
+        traceback.print_exc()
+        import sys
+        sys.exit(1)
 
 
 if __name__ == '__main__':
