@@ -56,7 +56,7 @@ def get_latest_run():
     headers = {"Authorization": f"Bearer {APIFY_API_TOKEN}"}
     params = {
         "limit": 5,
-        "desc": True,  # 最新的排前面
+        "desc": "true",  # 最新的排前面 (必須用字串 "true"，否則 requests 發送 "True" 會被 Apify 忽略導致抓到最舊的)
         "status": "SUCCEEDED"  # 只要成功的
     }
     
