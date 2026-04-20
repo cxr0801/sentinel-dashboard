@@ -141,21 +141,28 @@ def analyze_sentiment(text):
 
 
 def extract_keywords(posts, top_n=10):
-    """簡易關鍵字擷取（中文斷詞）"""
-    import re
+    """自定義關鍵字擷取頻率統計"""
     from collections import Counter
     
-    STOPWORDS = set(['的','了','是','在','我','你','他','她','們','都','也',
-                     '就','而','但','或','和','與','及','有','沒','這','那',
-                     '一','不','很','要','會','可','因','所','如','樣','真',
-                     '什','怎','還','已','現','然','只','個','應'])
+    # 📝 您可以在這裡自由新增、刪除、修改您想追蹤的「專屬關鍵字」
+    CUSTOM_KEYWORDS = [
+        '1985', '申訴', '督導', '裝檢', '留守', '長官', '大隊長', 
+        '連長', '營長', '士官長', '伙房', '站哨', '放假', '退伍', 
+        '招募', '加班', '懲處', '國防部', '演習', '教召', '薪水',
+        '特休', '排假', '志願役', '義務役', '裝備', '打靶', '福利'
+    ]
     
     all_text = ' '.join(p.get('text','') or '' for p in posts)
-    words = re.findall(r'[\u4e00-\u9fff]{2,4}', all_text)
-    filtered = [w for w in words if w not in STOPWORDS and len(w) >= 2]
     
-    return Counter(filtered).most_common(top_n)
-
+    keyword_counts = Counter()
+    for kw in CUSTOM_KEYWORDS:
+        # 計算該關鍵字在所有貼文中出現的總次數
+        count = all_text.count(kw)
+        if count > 0:
+            keyword_counts[kw] = count
+    
+    # 回傳出現次數最高的前 N 名
+    return keyword_counts.most_common(top_n)
 
 def analyze_data(json_file):
     """執行完整分析"""
