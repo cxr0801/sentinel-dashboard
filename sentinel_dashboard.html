@@ -459,35 +459,27 @@ mark{background:rgba(104,178,160,0.3);color:var(--c1);border-radius:2px;padding:
 
   <nav class="nav">
     <span class="nav-section">主要功能</span>
-    <a class="nav-item active" href="#" onclick="return false">
+    <a class="nav-item active" href="#top-section">
       <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
       總覽儀錶板
     </a>
-    <a class="nav-item" href="#" onclick="return false">
+    <a class="nav-item" href="#charts-section">
       <svg viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
-      情緒分析
+      情緒與趨勢
     </a>
-    <a class="nav-item" href="#" onclick="return false">
+    <a class="nav-item" href="#posts-section">
       <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
       貼文搜尋
       <span class="nav-badge" id="nb-total">0</span>
     </a>
-    <a class="nav-item" href="#" onclick="return false">
-      <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-      關鍵字趨勢
-    </a>
 
     <span class="nav-section">輿情監控</span>
-    <a class="nav-item" href="#" onclick="return false">
+    <a class="nav-item" href="#alerts-section">
       <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
       警報管理
       <span class="nav-badge warn" id="nb-warn">0</span>
     </a>
-    <a class="nav-item" href="#" onclick="return false">
-      <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
-      歷史快照
-    </a>
-    <a class="nav-item" href="#" onclick="return false">
+    <a class="nav-item" href="#" onclick="window.print(); return false;">
       <svg viewBox="0 0 24 24"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
       報表匯出
     </a>
@@ -526,10 +518,10 @@ mark{background:rgba(104,178,160,0.3);color:var(--c1);border-radius:2px;padding:
   </div>
 
   <!-- CONTENT -->
-  <div class="content">
+  <div class="content" id="top-section" style="scroll-margin-top: 70px;">
 
     <!-- Alert Banner -->
-    <div class="alert-banner">
+    <div class="alert-banner" id="alerts-section" style="scroll-margin-top: 70px;">
       <div class="alert-icon-wrap">⚠️</div>
       <div class="alert-body">
         <div class="alert-title" id="alert-title">高負面聲量警報</div>
@@ -599,7 +591,7 @@ mark{background:rgba(104,178,160,0.3);color:var(--c1);border-radius:2px;padding:
     </div>
 
     <!-- Donut + KW Bars -->
-    <div class="charts-row">
+    <div class="charts-row" id="charts-section" style="scroll-margin-top: 70px;">
       <div class="card">
         <div class="card-hdr">
           <div class="card-title">情緒分布</div>
@@ -636,7 +628,7 @@ mark{background:rgba(104,178,160,0.3);color:var(--c1);border-radius:2px;padding:
     </div>
 
     <!-- Posts -->
-    <div class="card" style="margin-bottom:16px">
+    <div class="card" id="posts-section" style="margin-bottom:16px; scroll-margin-top: 70px;">
       <div class="card-hdr">
         <div class="card-title">貼文列表</div>
         <div class="card-badge" id="posts-badge">0 則</div>
