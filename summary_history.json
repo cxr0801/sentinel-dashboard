@@ -1,20 +1,20 @@
 [
   {
     "date": "2026-04-20",
-    "total": 19,
-    "negative": 4,
-    "positive": 5,
-    "neutral": 10,
-    "negRate": 21.1,
-    "posRate": 26.3,
-    "avgLikes": 26.3,
-    "maxLikes": 208,
+    "total": 92,
+    "negative": 23,
+    "positive": 11,
+    "neutral": 58,
+    "negRate": 25.0,
+    "posRate": 12.0,
+    "avgLikes": 28.2,
+    "maxLikes": 228,
     "topKeywords": [
-      "如果你還",
-      "浪費時間",
-      "參加",
-      "這裡大概",
-      "兩性淫規"
+      "一樣",
+      "問題",
+      "好的",
+      "退伍",
+      "知道"
     ]
   }
 ]
