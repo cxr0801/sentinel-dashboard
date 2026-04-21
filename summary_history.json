@@ -34,5 +34,23 @@
       "督導",
       "裝備"
     ]
+  },
+  {
+    "date": "2026-04-22",
+    "total": 187,
+    "negative": 43,
+    "positive": 23,
+    "neutral": 121,
+    "negRate": 23.0,
+    "posRate": 12.3,
+    "avgLikes": 47.5,
+    "maxLikes": 848,
+    "topKeywords": [
+      "點數",
+      "徐巧芯",
+      "陸勤部",
+      "服供站",
+      "服裝供售站"
+    ]
   }
 ]
