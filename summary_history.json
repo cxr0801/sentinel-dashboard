@@ -52,5 +52,23 @@
       "服供站",
       "服裝供售站"
     ]
+  },
+  {
+    "date": "2026-04-23",
+    "total": 187,
+    "negative": 43,
+    "positive": 20,
+    "neutral": 124,
+    "negRate": 23.0,
+    "posRate": 10.7,
+    "avgLikes": 51.5,
+    "maxLikes": 927,
+    "topKeywords": [
+      "點數",
+      "徐巧芯",
+      "陸勤部",
+      "服供站",
+      "服裝供售站"
+    ]
   }
 ]
