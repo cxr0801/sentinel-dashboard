@@ -70,5 +70,17 @@
       "服供站",
       "服裝供售站"
     ]
+  },
+  {
+    "date": "2026-04-24",
+    "total": 2,
+    "negative": 1,
+    "positive": 0,
+    "neutral": 1,
+    "negRate": 50.0,
+    "posRate": 0.0,
+    "avgLikes": 11.0,
+    "maxLikes": 21,
+    "topKeywords": []
   }
 ]
