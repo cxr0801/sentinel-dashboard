@@ -82,5 +82,22 @@
     "avgLikes": 11.0,
     "maxLikes": 21,
     "topKeywords": []
+  },
+  {
+    "date": "2026-05-21",
+    "total": 177,
+    "negative": 50,
+    "positive": 13,
+    "neutral": 114,
+    "negRate": 28.2,
+    "posRate": 7.3,
+    "avgLikes": 45.1,
+    "maxLikes": 974,
+    "topKeywords": [
+      "點數",
+      "迷彩服",
+      "陸勤部",
+      "服裝供售站"
+    ]
   }
 ]
