@@ -1,23 +1,5 @@
 [
   {
-    "date": "2026-04-21",
-    "total": 188,
-    "negative": 41,
-    "positive": 22,
-    "neutral": 125,
-    "negRate": 21.8,
-    "posRate": 11.7,
-    "avgLikes": 44.0,
-    "maxLikes": 758,
-    "topKeywords": [
-      "長官",
-      "退伍",
-      "國防部",
-      "督導",
-      "裝備"
-    ]
-  },
-  {
     "date": "2026-04-22",
     "total": 187,
     "negative": 43,
@@ -114,6 +96,23 @@
       "迷彩服",
       "陸勤部",
       "點數",
+      "運動鞋"
+    ]
+  },
+  {
+    "date": "2026-05-24",
+    "total": 180,
+    "negative": 33,
+    "positive": 18,
+    "neutral": 129,
+    "negRate": 18.3,
+    "posRate": 10.0,
+    "avgLikes": 54.9,
+    "maxLikes": 1135,
+    "topKeywords": [
+      "服裝供售站",
+      "迷彩服",
+      "陸勤部",
       "運動鞋"
     ]
   }
