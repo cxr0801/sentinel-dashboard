@@ -1,22 +1,5 @@
 [
   {
-    "date": "2026-05-22",
-    "total": 177,
-    "negative": 50,
-    "positive": 13,
-    "neutral": 114,
-    "negRate": 28.2,
-    "posRate": 7.3,
-    "avgLikes": 47.7,
-    "maxLikes": 1045,
-    "topKeywords": [
-      "點數",
-      "迷彩服",
-      "陸勤部",
-      "服裝供售站"
-    ]
-  },
-  {
     "date": "2026-05-23",
     "total": 181,
     "negative": 40,
@@ -108,6 +91,23 @@
     "posRate": 10.3,
     "avgLikes": 36.1,
     "maxLikes": 645,
+    "topKeywords": [
+      "徐巧芯",
+      "陸勤部",
+      "點數",
+      "迷彩服"
+    ]
+  },
+  {
+    "date": "2026-06-23",
+    "total": 147,
+    "negative": 22,
+    "positive": 13,
+    "neutral": 112,
+    "negRate": 15.0,
+    "posRate": 8.8,
+    "avgLikes": 32.9,
+    "maxLikes": 435,
     "topKeywords": [
       "徐巧芯",
       "陸勤部",
