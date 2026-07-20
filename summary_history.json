@@ -1,17 +1,5 @@
 [
   {
-    "date": "2026-05-26",
-    "total": 2,
-    "negative": 0,
-    "positive": 0,
-    "neutral": 2,
-    "negRate": 0.0,
-    "posRate": 0.0,
-    "avgLikes": 20.5,
-    "maxLikes": 28,
-    "topKeywords": []
-  },
-  {
     "date": "2026-06-21",
     "total": 150,
     "negative": 26,
@@ -105,5 +93,20 @@
     "avgLikes": 7.0,
     "maxLikes": 16,
     "topKeywords": []
+  },
+  {
+    "date": "2026-07-21",
+    "total": 166,
+    "negative": 35,
+    "positive": 28,
+    "neutral": 103,
+    "negRate": 21.1,
+    "posRate": 16.9,
+    "avgLikes": 45.6,
+    "maxLikes": 1876,
+    "topKeywords": [
+      "陸勤部",
+      "迷彩服"
+    ]
   }
 ]
