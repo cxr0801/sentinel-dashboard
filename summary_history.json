@@ -1,21 +1,5 @@
 [
   {
-    "date": "2026-06-24",
-    "total": 146,
-    "negative": 20,
-    "positive": 13,
-    "neutral": 113,
-    "negRate": 13.7,
-    "posRate": 8.9,
-    "avgLikes": 45.5,
-    "maxLikes": 720,
-    "topKeywords": [
-      "陸勤部",
-      "徐巧芯",
-      "迷彩服"
-    ]
-  },
-  {
     "date": "2026-06-25",
     "total": 144,
     "negative": 24,
@@ -102,6 +86,21 @@
       "徐巧芯",
       "陸勤部",
       "迷彩服"
+    ]
+  },
+  {
+    "date": "2026-07-25",
+    "total": 176,
+    "negative": 32,
+    "positive": 20,
+    "neutral": 124,
+    "negRate": 18.2,
+    "posRate": 11.4,
+    "avgLikes": 55.5,
+    "maxLikes": 2200,
+    "topKeywords": [
+      "點數",
+      "徐巧芯"
     ]
   }
 ]
