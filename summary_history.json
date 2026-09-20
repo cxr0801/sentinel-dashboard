@@ -1,17 +1,5 @@
 [
   {
-    "date": "2026-07-26",
-    "total": 2,
-    "negative": 0,
-    "positive": 0,
-    "neutral": 2,
-    "negRate": 0.0,
-    "posRate": 0.0,
-    "avgLikes": 107.5,
-    "maxLikes": 188,
-    "topKeywords": []
-  },
-  {
     "date": "2026-08-21",
     "total": 180,
     "negative": 41,
@@ -108,5 +96,20 @@
     "avgLikes": 3.0,
     "maxLikes": 9,
     "topKeywords": []
+  },
+  {
+    "date": "2026-09-21",
+    "total": 178,
+    "negative": 47,
+    "positive": 28,
+    "neutral": 103,
+    "negRate": 26.4,
+    "posRate": 15.7,
+    "avgLikes": 36.4,
+    "maxLikes": 870,
+    "topKeywords": [
+      "點數",
+      "陸勤部"
+    ]
   }
 ]
