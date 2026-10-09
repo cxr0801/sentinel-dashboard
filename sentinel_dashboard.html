@@ -195,6 +195,8 @@ html,body{height:100%;font-family:'Noto Sans TC','Inter',sans-serif;background:v
 .alert-title{font-weight:600;font-size:13px;color:#fff;margin-bottom:4px}
 .alert-msg{font-size:12px;color:rgba(255,255,255,0.8);line-height:1.5;margin-bottom:10px}
 .alert-tags{display:flex;flex-wrap:wrap;gap:5px}
+.data-notice{display:none;margin-bottom:16px;padding:12px 16px;border-radius:10px;background:#E0ECDE;border-left:4px solid #68B2A0;color:#2C6975;font-size:13px;line-height:1.6}
+.data-notice b{font-weight:600}
 .atag{
   padding:3px 11px;
   background:rgba(255,255,255,0.15);
@@ -520,6 +522,11 @@ mark{background:rgba(104,178,160,0.3);color:var(--c1);border-radius:2px;padding:
   <!-- CONTENT -->
   <div class="content" id="top-section" style="scroll-margin-top: 70px;">
 
+    <!-- 資料累積中提示（貼文數不足時顯示） -->
+    <div class="data-notice" id="data-notice">
+      <b>資料重新累積中</b>：系統改為每日晚間 17:00–24:00 抽樣統計，目前樣本數較少（<span id="notice-total">0</span> 則），七日趨勢與各項比例僅供參考，累積滿七天後會更完整。
+    </div>
+
     <!-- Alert Banner -->
     <div class="alert-banner" id="alerts-section" style="scroll-margin-top: 70px; display: none;">
       <div class="alert-icon-wrap">⚠️</div>
@@ -718,6 +725,12 @@ function init(){
 
   // Topbar
   g('tb-sub').textContent=`${C.snapshot} ｜ 共 ${C.total} 則貼文（每日晚間 17:00–24:00 抽樣）`;
+
+  // 樣本不足（約不到 6 天的抽樣量）時，顯示「資料重新累積中」提示
+  if(C.total<150){
+    g('notice-total').textContent=C.total;
+    g('data-notice').style.display='block';
+  }
 
   // Alert
   g('alert-title').textContent='⚠ 高負面聲量警報';
