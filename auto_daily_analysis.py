@@ -11,7 +11,7 @@ import os
 import json
 import time
 import requests
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 # ══════════════════════════════════════════════════════════════
@@ -31,6 +31,7 @@ DATA_DIR = BASE_DIR / "data"           # 每日原始資料
 OUTPUT_DIR = BASE_DIR / "output"       # 分析報告
 DASHBOARD_PATH = BASE_DIR / "sentinel_dashboard.html"  # 儀錶板路徑
 HISTORY_PATH = BASE_DIR / "summary_history.json"       # 7日摘要歷史（已去識別化）
+ALL_POSTS_DB_PATH = BASE_DIR / "all_posts_db.json"     # 累積貼文資料庫
 
 # 建立資料夾
 DATA_DIR.mkdir(exist_ok=True)
@@ -100,7 +101,7 @@ def download_dataset(run_id):
             return None
         
         # 儲存原始資料
-        today = datetime.now().strftime("%Y%m%d")
+        today = datetime.now(timezone(timedelta(hours=8))).strftime("%Y%m%d")
         filename = DATA_DIR / f"dataset_{today}.json"
         
         with open(filename, 'w', encoding='utf-8') as f:
@@ -140,6 +141,114 @@ def analyze_sentiment(text):
         return 'neutral'
 
 
+TZ_TW = timezone(timedelta(hours=8))   # 台灣時間 UTC+8
+EVENING_START_HOUR = 17                # 只統計台灣時間 17:00–24:00 發的貼文
+
+
+def parse_post_time(p):
+    """讀取貼文發文時間（Apify 的 time 欄位為 UTC ISO 格式），回傳台灣時間；讀不到回傳 None"""
+    raw = p.get('time') or p.get('date') or p.get('createdAt')
+    if not raw:
+        return None
+    try:
+        dt = datetime.fromisoformat(str(raw).replace('Z', '+00:00'))
+    except ValueError:
+        return None
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=timezone.utc)
+    return dt.astimezone(TZ_TW)
+
+
+def in_evening_window(dt):
+    """是否落在台灣時間 17:00–24:00（含 17:00 整，不含隔日 00:00）"""
+    return dt.hour >= EVENING_START_HOUR
+
+
+def update_cumulative_db(new_posts_raw):
+    """更新累積資料庫，進行合併、去重與互動數更新"""
+    print(f"\n[步驟2.5] 正在更新累積資料庫...")
+    
+    # 讀取現有資料庫
+    if ALL_POSTS_DB_PATH.exists():
+        try:
+            with open(ALL_POSTS_DB_PATH, 'r', encoding='utf-8') as f:
+                db_posts = json.load(f)
+        except Exception as e:
+            print(f"[!] 讀取累積資料庫失敗：{e}，將建立新資料庫")
+            db_posts = []
+    else:
+        db_posts = []
+
+    # 建立以 URL 為 Key 的字典方便去重
+    posts_dict = {p['url']: p for p in db_posts if p.get('url')}
+    
+    # 合併新資料
+    new_count = 0
+    update_count = 0
+    skipped_count = 0
+    for p in new_posts_raw:
+        url = p.get('url')
+        if not url: continue
+        
+        # 提取核心欄位
+        text = p.get('text', '') or ''
+
+        # 發文時間（Apify 的 time 為 UTC），換算成台灣時間
+        post_dt = parse_post_time(p)
+        if post_dt is None:
+            continue  # 沒有發文時間的貼文無法判斷時段，略過
+        if not in_evening_window(post_dt):
+            skipped_count += 1
+            continue
+
+        new_data = {
+            'text': text,
+            'likes': p.get('likesCount', 0) or 0,
+            'comments': p.get('commentsCount', 0) or 0,
+            'sentiment': analyze_sentiment(text),
+            'author': p.get('user', {}).get('name', '匿名') if isinstance(p.get('user'), dict) else '匿名',
+            'url': url,
+            'date': post_dt.strftime("%Y-%m-%d"),
+            'time': post_dt.strftime("%H:%M"),
+        }
+        
+        if url in posts_dict:
+            # 更新互動數與內容，但保留原始日期（確保日期不會因為重新抓取而變晚）
+            old_date = posts_dict[url].get('date', '')
+            if old_date and old_date < new_data['date']:
+                new_data['date'] = old_date
+            posts_dict[url] = new_data
+            update_count += 1
+        else:
+            posts_dict[url] = new_data
+            new_count += 1
+            
+    # 轉換回列表並根據日期排序
+    all_posts = list(posts_dict.values())
+    
+    # 移除超過 30 天的資料 (台灣時間)
+    from datetime import timezone, timedelta
+    tz_tw = timezone(timedelta(hours=8))
+    cutoff_date = (datetime.now(tz_tw) - timedelta(days=30)).strftime("%Y-%m-%d")
+    
+    initial_count = len(all_posts)
+    all_posts = [p for p in all_posts if p.get('date', '9999') >= cutoff_date]
+    removed_count = initial_count - len(all_posts)
+    
+    # 根據互動熱度 (likes + comments*2) 排序，確保之後分析時能抓到重點
+    all_posts = sorted(all_posts, key=lambda x: x['likes'] + x['comments']*2, reverse=True)
+    
+    # 儲存
+    with open(ALL_POSTS_DB_PATH, 'w', encoding='utf-8') as f:
+        json.dump(all_posts, f, ensure_ascii=False, indent=2)
+        
+    print(f"[OK] 累積資料庫更新完成：")
+    print(f"     新增：{new_count} 則 | 更新：{update_count} 則 | 移除(過期)：{removed_count} 則")
+    print(f"     不在晚間 {EVENING_START_HOUR}:00–24:00 時段而略過：{skipped_count} 則")
+    print(f"     目前資料庫總數：{len(all_posts)} 則")
+    return all_posts
+
+
 def extract_keywords(posts, top_n=10):
     """自定義關鍵字擷取頻率統計"""
     from collections import Counter
@@ -162,29 +271,12 @@ def extract_keywords(posts, top_n=10):
     # 回傳出現次數最高的前 N 名
     return keyword_counts.most_common(top_n)
 
-def analyze_data(json_file):
-    """執行完整分析"""
+def analyze_data(posts):
+    """執行完整分析 (使用累積後的貼文列表)"""
     print(f"\n[步驟3] 正在分析資料...")
     
-    with open(json_file, encoding='utf-8') as f:
-        posts = json.load(f)
-    
-    # 資料清理與分析
-    analyzed = []
-    for p in posts:
-        text = p.get('text', '') or ''
-        if not text.strip():
-            continue
-            
-        analyzed.append({
-            'text': text,
-            'likes': p.get('likesCount', 0) or 0,
-            'comments': p.get('commentsCount', 0) or 0,
-            'sentiment': analyze_sentiment(text),
-            'author': p.get('user', {}).get('name', '匿名') if isinstance(p.get('user'), dict) else '匿名',
-            'url': p.get('url', '') or '',  # Facebook 貼文原文連結
-            'date': str(p.get('date') or p.get('createdAt') or '')[:10],
-        })
+    # 資料清理與分析 (posts 已經是 update_cumulative_db 處理過的格式)
+    analyzed = posts
     
     # 統計
     total = len(analyzed)
@@ -201,11 +293,18 @@ def analyze_data(json_file):
     mid = sum(1 for p in analyzed if 20 < p['likes'] <= 100)
     low = sum(1 for p in analyzed if p['likes'] <= 20)
     
-    # 熱門關鍵字
+    # 熱門關鍵字 (從所有累積貼文中擷取)
     keywords = extract_keywords(posts, top_n=10)
     
-    # Top 100 貼文 (顯示在儀表板)
-    top_posts = sorted(analyzed, key=lambda x: x['likes'] + x['comments']*2, reverse=True)[:100]
+    # 儀表板顯示規則：
+    # 1. 顯示最近 7 天的所有貼文，但上限不超過 300 則 (避免網頁過大)
+    # 2. 或是直接取熱度最高的 Top 200
+    from datetime import datetime, timedelta, timezone
+    tz_tw = timezone(timedelta(hours=8))
+    seven_days_ago = (datetime.now(tz_tw) - timedelta(days=7)).strftime("%Y-%m-%d")
+    
+    top_posts = [p for p in analyzed if p['date'] >= seven_days_ago]
+    top_posts = sorted(top_posts, key=lambda x: x['likes'] + x['comments']*2, reverse=True)[:200]
     
     stats = {
         'total': total,
@@ -288,7 +387,7 @@ def update_history(stats):
 # 3. 產出 Excel 報告
 # ══════════════════════════════════════════════════════════════
 
-def generate_excel_report(stats, json_file):
+def generate_excel_report(stats, posts):
     """產出 Excel 報告（需要 pandas, openpyxl）"""
     print(f"\n[步驟4] 正在產出 Excel 報告...")
     
@@ -298,9 +397,6 @@ def generate_excel_report(stats, json_file):
         print("[!] 未安裝 pandas，略過 Excel 報告")
         return None
     
-    with open(json_file, encoding='utf-8') as f:
-        posts = json.load(f)
-    
     # 整理資料
     df_posts = []
     for p in posts:
@@ -308,11 +404,13 @@ def generate_excel_report(stats, json_file):
         if not text.strip():
             continue
         df_posts.append({
-            '貼文內容': text[:200],
-            '按讚數': p.get('likesCount', 0) or 0,
-            '留言數': p.get('commentsCount', 0) or 0,
-            '情緒': analyze_sentiment(text),
-            '作者': p.get('user', {}).get('name', '匿名') if isinstance(p.get('user'), dict) else '匿名',
+            '發布日期': p.get('date', ''),
+            '貼文內容': text[:500],
+            '按讚數': p.get('likes', 0),
+            '留言數': p.get('comments', 0),
+            '情緒': p.get('sentiment', 'neutral'),
+            '作者': p.get('author', '匿名'),
+            '連結': p.get('url', ''),
         })
     
     df = pd.DataFrame(df_posts)
@@ -456,17 +554,32 @@ def main():
             print("\n[X] 無法下載資料集，程式結束")
             return
         
-        # 2. 分析
-        stats = analyze_data(json_file)
+        # 2. 更新累積資料庫並分析
+        with open(json_file, encoding='utf-8') as f:
+            new_posts_raw = json.load(f)
+            
+        all_posts = update_cumulative_db(new_posts_raw)
+        stats = analyze_data(all_posts)
         
-        # 3. 更新7日摖要歷史
+        # 3. 更新7日摘要歷史
         history = update_history(stats)
         
         # 4. 產出 Excel
-        generate_excel_report(stats, json_file)
+        generate_excel_report(stats, all_posts)
         
-        # 5. 更新儀錶板（传入 7日歷史）
+        # 5. 更新儀錶板（傳入 7日歷史）
         update_dashboard(stats, history)
+        
+        # 6. 產出回覆工作清單
+        try:
+            from reply_manager import generate_reply_queue, export_reply_worksheet
+            reply_queue = generate_reply_queue(all_posts)
+            if reply_queue:
+                export_reply_worksheet(reply_queue)
+        except ImportError:
+            print("\n[!] 回覆管理模組未安裝，跳過回覆清單產出")
+        except Exception as e:
+            print(f"\n[!] 產出回覆清單時發生錯誤：{e}")
         
         print("\n" + "=" * 60)
         print("[OK] 所有任務完成！")

@@ -7,3 +7,12 @@ __pycache__/
 .env
 *.xlsx
 *.log
+
+# 回覆系統敏感資料
+reply_config.json
+reply_history.json
+reply_queue.json
+chrome_profiles/
+
+# 本機測試用假資料
+all_posts_db.test.json.bak
