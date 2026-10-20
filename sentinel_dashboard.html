@@ -688,10 +688,10 @@ mark{background:rgba(104,178,160,0.3);color:var(--c1);border-radius:2px;padding:
 //  資料區塊（由 auto_daily_analysis.py 自動更新）
 // ══════════════════════════════════════════════════
 const C={
-  snapshot:"2026-09-26 07:00",
-  total:3, negative:0, positive:0, neutral:3,
-  avgLikes:19.3, maxLikes:54, maxComments:4, avgComments:3.0,
-  high:0, mid:1, low:2,
+  snapshot:"2026-10-21 00:06",
+  total:18, negative:1, positive:2, neutral:15,
+  avgLikes:32.1, maxLikes:167, maxComments:30, avgComments:7.9,
+  high:1, mid:6, low:11,
   alert:"⚠ 高負面聲量警報｜「加薪15000」「退伍」話題持續延燒，近期最高互動貼文均與薪資福利相關，建議重點關注。",
   tags:["#加薪15000","#職場霸凌","#裝備問題","#退伍潮","#長官行為","#海軍航指","#爆料"],
   radar:[
@@ -700,14 +700,12 @@ const C={
   ],
 };
 const POSTS=[
-  {likes:54,comments:3,text:"中秋佳節 團聚之餘 希望大家也不要忘記那些已經消失在雷達光點的飛官與機組人員 . 共同緬懷 少校 **盧季佑** 少校 **過俊男** 上尉 **辛柏毅** 士官長 **劉尚鈞** 少尉 **徐大鈞** 上尉 **陳奕** 中尉 **羅尚樺",s:"neutral",url:"https://www.facebook.com/groups/3643373249226437/permalink/4631480883748997/",date:""},
-  {likes:3,comments:4,text:"兇欸～ 休假早上還在睡覺，沒接到有必要那麼兇嗎？",s:"neutral",url:"https://www.facebook.com/groups/3643373249226437/permalink/4631402750423477/",date:""},
-  {likes:1,comments:2,text:"如果用一宗原則，取代一中原則，做為兩岸發展的基本架構 請問各位革命軍人，有什麼看法  一宗原則  1.兩岸分別屬於中華文化下，建立的合法政權，均有代表中國之權利  2.兩岸政體應尋求對民族發展、成長最有利作法，依照各自政體之概念，持續發展。",s:"neutral",url:"https://www.facebook.com/groups/3643373249226437/permalink/4630932827137136/",date:""}
+  
 ];
 const KW=[
   
 ];
-const HISTORY=[{"date":"2026-08-26","total":3,"negative":1,"positive":0,"neutral":2,"negRate":33.3,"posRate":0.0,"avgLikes":3.0,"maxLikes":9,"topKeywords":[]},{"date":"2026-09-21","total":178,"negative":47,"positive":28,"neutral":103,"negRate":26.4,"posRate":15.7,"avgLikes":36.4,"maxLikes":870,"topKeywords":["點數","陸勤部"]},{"date":"2026-09-22","total":173,"negative":46,"positive":28,"neutral":99,"negRate":26.6,"posRate":16.2,"avgLikes":35.0,"maxLikes":871,"topKeywords":["點數","陸勤部"]},{"date":"2026-09-23","total":171,"negative":45,"positive":28,"neutral":98,"negRate":26.3,"posRate":16.4,"avgLikes":34.7,"maxLikes":591,"topKeywords":["點數","徐巧芯","陸勤部"]},{"date":"2026-09-24","total":167,"negative":45,"positive":24,"neutral":98,"negRate":26.9,"posRate":14.4,"avgLikes":36.7,"maxLikes":593,"topKeywords":["點數","徐巧芯","陸勤部"]},{"date":"2026-09-25","total":170,"negative":41,"positive":27,"neutral":102,"negRate":24.1,"posRate":15.9,"avgLikes":37.5,"maxLikes":521,"topKeywords":["點數","徐巧芯","陸勤部"]},{"date":"2026-09-26","total":3,"negative":0,"positive":0,"neutral":3,"negRate":0.0,"posRate":0.0,"avgLikes":19.3,"maxLikes":54,"topKeywords":[]}];
+const HISTORY=[{"date":"2026-09-21","total":178,"negative":47,"positive":28,"neutral":103,"negRate":26.4,"posRate":15.7,"avgLikes":36.4,"maxLikes":870,"topKeywords":["點數","陸勤部"]},{"date":"2026-09-22","total":173,"negative":46,"positive":28,"neutral":99,"negRate":26.6,"posRate":16.2,"avgLikes":35.0,"maxLikes":871,"topKeywords":["點數","陸勤部"]},{"date":"2026-09-23","total":171,"negative":45,"positive":28,"neutral":98,"negRate":26.3,"posRate":16.4,"avgLikes":34.7,"maxLikes":591,"topKeywords":["點數","徐巧芯","陸勤部"]},{"date":"2026-09-24","total":167,"negative":45,"positive":24,"neutral":98,"negRate":26.9,"posRate":14.4,"avgLikes":36.7,"maxLikes":593,"topKeywords":["點數","徐巧芯","陸勤部"]},{"date":"2026-09-25","total":170,"negative":41,"positive":27,"neutral":102,"negRate":24.1,"posRate":15.9,"avgLikes":37.5,"maxLikes":521,"topKeywords":["點數","徐巧芯","陸勤部"]},{"date":"2026-09-26","total":3,"negative":0,"positive":0,"neutral":3,"negRate":0.0,"posRate":0.0,"avgLikes":19.3,"maxLikes":54,"topKeywords":[]},{"date":"2026-10-21","total":18,"negative":1,"positive":2,"neutral":15,"negRate":5.6,"posRate":11.1,"avgLikes":32.1,"maxLikes":167,"topKeywords":[]}];
 // ══════════════════════════════════════════════════
 
 const SC={positive:"#4CAF87",negative:"#E26D5A",neutral:"#68B2A0"};
