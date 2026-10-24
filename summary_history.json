@@ -1,21 +1,5 @@
 [
   {
-    "date": "2026-09-24",
-    "total": 167,
-    "negative": 45,
-    "positive": 24,
-    "neutral": 98,
-    "negRate": 26.9,
-    "posRate": 14.4,
-    "avgLikes": 36.7,
-    "maxLikes": 593,
-    "topKeywords": [
-      "點數",
-      "徐巧芯",
-      "陸勤部"
-    ]
-  },
-  {
     "date": "2026-09-25",
     "total": 170,
     "negative": 41,
@@ -81,6 +65,18 @@
   },
   {
     "date": "2026-10-24",
+    "total": 18,
+    "negative": 1,
+    "positive": 2,
+    "neutral": 15,
+    "negRate": 5.6,
+    "posRate": 11.1,
+    "avgLikes": 32.3,
+    "maxLikes": 167,
+    "topKeywords": []
+  },
+  {
+    "date": "2026-10-25",
     "total": 18,
     "negative": 1,
     "positive": 2,
