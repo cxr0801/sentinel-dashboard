@@ -1,17 +1,5 @@
 [
   {
-    "date": "2026-10-25",
-    "total": 18,
-    "negative": 1,
-    "positive": 2,
-    "neutral": 15,
-    "negRate": 5.6,
-    "posRate": 11.1,
-    "avgLikes": 32.3,
-    "maxLikes": 167,
-    "topKeywords": []
-  },
-  {
     "date": "2026-10-26",
     "total": 18,
     "negative": 1,
@@ -81,6 +69,18 @@
     "posRate": 11.1,
     "avgLikes": 32.6,
     "maxLikes": 166,
+    "topKeywords": []
+  },
+  {
+    "date": "2026-11-01",
+    "total": 18,
+    "negative": 1,
+    "positive": 2,
+    "neutral": 15,
+    "negRate": 5.6,
+    "posRate": 11.1,
+    "avgLikes": 32.4,
+    "maxLikes": 165,
     "topKeywords": []
   }
 ]
