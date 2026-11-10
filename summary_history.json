@@ -1,17 +1,5 @@
 [
   {
-    "date": "2026-11-02",
-    "total": 42,
-    "negative": 6,
-    "positive": 3,
-    "neutral": 33,
-    "negRate": 14.3,
-    "posRate": 7.1,
-    "avgLikes": 19.3,
-    "maxLikes": 165,
-    "topKeywords": []
-  },
-  {
     "date": "2026-11-03",
     "total": 42,
     "negative": 6,
@@ -80,6 +68,18 @@
     "negRate": 14.3,
     "posRate": 7.1,
     "avgLikes": 27.9,
+    "maxLikes": 200,
+    "topKeywords": []
+  },
+  {
+    "date": "2026-11-11",
+    "total": 24,
+    "negative": 5,
+    "positive": 1,
+    "neutral": 18,
+    "negRate": 20.8,
+    "posRate": 4.2,
+    "avgLikes": 24.8,
     "maxLikes": 200,
     "topKeywords": []
   }
